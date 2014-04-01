@@ -1,5 +1,10 @@
 DEVICE_PACKAGE_OVERLAYS += device/lge/p990/overlay
 
+# This device is hdpi.
+PRODUCT_AAPT_CONFIG := normal hdpi
+PRODUCT_AAPT_PREF_CONFIG := hdpi
+PRODUCT_LOCALES += hdpi
+
 # Board-specific init
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/init_recovery.rc:root/init_recovery.rc \

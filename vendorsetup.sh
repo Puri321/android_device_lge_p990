@@ -16,31 +16,13 @@
 
 add_lunch_combo slim_p990-userdebug
 add_lunch_combo cm_p990-userdebug
+add_lunch_combo carbon_p990-userdebug
 
 echo ""
 echo "Applying patches for P990"
 echo ""
 
-echo "Apply patch to frameworks/base"
-echo -n "Apply patch 0001-framework-base-patch.patch"
-(cd frameworks/base; git am ../../device/lge/p990/patches/0001-framework-base-patch.patch) > /dev/null 2>&1
-if [ $? == 0 ]; then
-       echo "     [DONE]"
-else
-       (cd frameworks/base; git am --abort)
-       echo "     [FAIL]"
-fi
-
 echo "Apply patch to frameworks/av"
-echo -n "Apply patch 0001-ifdef-for-ICS-Audio-Blob-compatibility.patch"
-(cd frameworks/av; git am ../../device/lge/p990/patches/0001-ifdef-for-ICS-Audio-Blob-compatibility.patch) > /dev/null 2>&1
-if [ $? == 0 ]; then
-	echo "     [DONE]"
-else
-	(cd frameworks/av; git am --abort)
-	echo "     [FAIL]"
-fi
-
 echo -n "Apply patch 0002-Add-missing-functions-and-signatures-for-older-OMX-v.patch"
 (cd frameworks/av; git am ../../device/lge/p990/patches/0002-Add-missing-functions-and-signatures-for-older-OMX-v.patch) > /dev/null 2>&1
 if [ $? == 0 ]; then
