@@ -14,8 +14,7 @@
 # limitations under the License.
 #
 
-add_lunch_combo slim_p990-userdebug
-add_lunch_combo cm_p990-userdebug
+add_lunch_combo omni_p990-userdebug
 
 echo ""
 echo "Applying patches for P990"
@@ -51,24 +50,6 @@ else
 	echo "     [FAIL]"
 fi
 
-echo -n "Apply patch 0002-Add-missing-functions-and-signatures-for-older-OMX-v.patch"
-(cd frameworks/av; git am ../../device/lge/p990/patches/0002-Add-missing-functions-and-signatures-for-older-OMX-v.patch) > /dev/null 2>&1
-if [ $? == 0 ]; then
-	echo "     [DONE]"
-else
-	(cd frameworks/av; git am --abort)
-	echo "     [FAIL]"
-fi
-
-echo "Apply patch to external/skia"
-echo -n "Apply patch 0001-external-skia-patch.patch"
-(cd external/skia; git am ../../device/lge/p990/patches/0001-external-skia-patch.patch) > /dev/null 2>&1
-if [ $? == 0 ]; then
-	echo "     [DONE]"
-else
-	(cd external/skia; git am --abort)
-	echo "     [FAIL]"
-fi
 echo "Apply patch to bionic"
 echo -n "Apply patch 0003-Add-tegra2-to-bionic.patch"
 (cd bionic; git am ../device/lge/p990/patches/0003-Add-tegra2-to-bionic.patch) > /dev/null 2>&1

@@ -1,4 +1,4 @@
-From 8d965383382645cd284ac0e2cfb8150f69af5967 Mon Sep 17 00:00:00 2001
+From 9b3cf50e5d5e08a5e0e8d25408d005db9d0f4753 Mon Sep 17 00:00:00 2001
 From: Nathan Chan <e334cn@gmail.com>
 Date: Fri, 22 Nov 2013 12:31:38 -0800
 Subject: [PATCH 1/1] #ifdef for ICS Audio Blob compatibility
@@ -11,18 +11,18 @@ Change-Id: Ib3d99e9637c5d8e1243c5d49d5bdb2c034bc2a41
  1 file changed, 4 insertions(+)
 
 diff --git a/media/libnbaio/AudioStreamOutSink.cpp b/media/libnbaio/AudioStreamOutSink.cpp
-index e7cd3ce..22c4e9c 100644
+index e4341d7..1f1951a 100644
 --- a/media/libnbaio/AudioStreamOutSink.cpp
 +++ b/media/libnbaio/AudioStreamOutSink.cpp
-@@ -85,6 +85,7 @@ status_t AudioStreamOutSink::getNextWriteTimestamp(int64_t *timestamp) {
- #ifndef HAVE_PRE_KITKAT_AUDIO_BLOB
+@@ -81,6 +81,7 @@ status_t AudioStreamOutSink::getNextWriteTimestamp(int64_t *timestamp) {
+ 
  status_t AudioStreamOutSink::getTimestamp(AudioTimestamp& timestamp)
  {
 +#ifndef ICS_AUDIO_BLOB
      if (mStream->get_presentation_position == NULL) {
          return INVALID_OPERATION;
      }
-@@ -96,6 +97,9 @@ status_t AudioStreamOutSink::getTimestamp(AudioTimestamp& timestamp)
+@@ -92,6 +93,9 @@ status_t AudioStreamOutSink::getTimestamp(AudioTimestamp& timestamp)
      }
      timestamp.mPosition = position64;
      return OK;
@@ -30,8 +30,8 @@ index e7cd3ce..22c4e9c 100644
 +    return INVALID_OPERATION;
 +#endif
  }
- #endif
  
+ }   // namespace android
 -- 
-1.8.3.2
+1.9.1
 

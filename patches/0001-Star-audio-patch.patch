@@ -1,58 +1,47 @@
-From c54aee0a475ef1d1347fd4466994b1c8edfec3ab Mon Sep 17 00:00:00 2001
+From 823c4aedcbd92ea9e966657da23b29c6a81320c0 Mon Sep 17 00:00:00 2001
 From: hjunii <hjunii@gmail.com>
 Date: Fri, 28 Feb 2014 17:43:02 +0900
 Subject: [PATCH 1/1] Star audio patch
 
 Change-Id: Ib0e3fe12e84355469128e6df14b9bb92ca7080b9
 ---
- include/hardware/audio.h | 14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+ include/hardware/audio.h | 32 ++++++++++++++++++++++++++++++--
+ modules/audio/audio_hw.c | 10 ++++++++++
+ 2 files changed, 40 insertions(+), 2 deletions(-)
 
 diff --git a/include/hardware/audio.h b/include/hardware/audio.h
-index 1ec6c5a..0be9712 100644
+index a2ad4f7..e0b8035 100644
 --- a/include/hardware/audio.h
 +++ b/include/hardware/audio.h
-@@ -349,6 +349,13 @@ struct audio_stream_out {
-     int (*get_render_position)(const struct audio_stream_out *stream,
-                                uint32_t *dsp_frames);
- 
-+    /**
-+     * get the local time at which the next write to the audio driver will be presented.
-+     * The units are microseconds, where the epoch is decided by the local audio HAL.
-+     */
-+    int (*get_next_write_timestamp)(const struct audio_stream_out *stream,
-+                                    int64_t *timestamp);
-+
- #ifndef ICS_AUDIO_BLOB
- #ifdef QCOM_DIRECTTRACK
-     /**
-@@ -360,7 +367,6 @@ struct audio_stream_out {
-      * stop audio data rendering
-      */
-     int (*stop)(struct audio_stream_out *stream);
--#endif
- 
-     /**
-      * get the local time at which the next write to the audio driver will be presented.
-@@ -368,6 +374,8 @@ struct audio_stream_out {
-      */
-     int (*get_next_write_timestamp)(const struct audio_stream_out *stream,
-                                     int64_t *timestamp);
+@@ -56,7 +56,11 @@ __BEGIN_DECLS
+ #define AUDIO_DEVICE_API_VERSION_0_0 HARDWARE_DEVICE_API_VERSION(0, 0)
+ #define AUDIO_DEVICE_API_VERSION_1_0 HARDWARE_DEVICE_API_VERSION(1, 0)
+ #define AUDIO_DEVICE_API_VERSION_2_0 HARDWARE_DEVICE_API_VERSION(2, 0)
++#ifndef ICS_AUDIO_BLOB
+ #define AUDIO_DEVICE_API_VERSION_CURRENT AUDIO_DEVICE_API_VERSION_2_0
++#else
++#define AUDIO_DEVICE_API_VERSION_CURRENT AUDIO_DEVICE_API_VERSION_1_0
 +#endif
+ 
+ /**
+  * List of known audio HAL modules. This is the base name of the audio HAL
+@@ -591,6 +595,7 @@ struct audio_hw_device {
+      */
+     int (*set_master_volume)(struct audio_hw_device *dev, float volume);
+ 
++#ifndef ICS_AUDIO_BLOB
+     /**
+      * Get the current master volume value for the HAL, if the HAL supports
+      * master volume control.  AudioFlinger will query this value from the
+@@ -599,6 +604,7 @@ struct audio_hw_device {
+      * this method may leave it set to NULL.
+      */
+     int (*get_master_volume)(struct audio_hw_device *dev, float *volume);
 +#endif
  
      /**
-      * set the callback function for notifying completion of non-blocking
-@@ -442,7 +450,7 @@ struct audio_stream_out {
-      */
-     int (*get_presentation_position)(const struct audio_stream_out *stream,
-                                uint64_t *frames, struct timespec *timestamp);
--#endif
-+
- #ifdef QCOM_DIRECTTRACK
-     /**
-     * return the current timestamp after quering to the driver
-@@ -634,6 +642,8 @@ struct audio_hw_device {
+      * set_mode is called when the audio mode changes. AUDIO_MODE_NORMAL mode
+@@ -606,6 +612,8 @@ struct audio_hw_device {
       * playing, and AUDIO_MODE_IN_CALL when a call is in progress.
       */
      int (*set_mode)(struct audio_hw_device *dev, audio_mode_t mode);
@@ -61,6 +50,134 @@ index 1ec6c5a..0be9712 100644
  
      /* mic mute */
      int (*set_mic_mute)(struct audio_hw_device *dev, bool state);
+@@ -626,32 +634,51 @@ struct audio_hw_device {
+      * See also get_buffer_size which is for a particular stream.
+      */
+     size_t (*get_input_buffer_size)(const struct audio_hw_device *dev,
++#ifndef ICS_AUDIO_BLOB
+                                     const struct audio_config *config);
++#else
++                                    uint32_t sample_rate, int format,
++                                    int channel_count);
++#endif
+ 
+     /** This method creates and opens the audio hardware output stream */
++#ifndef ICS_AUDIO_BLOB
+     int (*open_output_stream)(struct audio_hw_device *dev,
+                               audio_io_handle_t handle,
+                               audio_devices_t devices,
+                               audio_output_flags_t flags,
+                               struct audio_config *config,
+                               struct audio_stream_out **stream_out);
+-
++#else
++    int (*open_output_stream)(struct audio_hw_device *dev, uint32_t devices,
++                              int *format, uint32_t *channels,
++                              uint32_t *sample_rate,
++                              struct audio_stream_out **out);
++#endif
+     void (*close_output_stream)(struct audio_hw_device *dev,
+                                 struct audio_stream_out* stream_out);
+ 
+     /** This method creates and opens the audio hardware input stream */
++#ifndef ICS_AUDIO_BLOB
+     int (*open_input_stream)(struct audio_hw_device *dev,
+                              audio_io_handle_t handle,
+                              audio_devices_t devices,
+                              struct audio_config *config,
+                              struct audio_stream_in **stream_in);
+-
++#else
++    int (*open_input_stream)(struct audio_hw_device *dev, uint32_t devices,
++                             int *format, uint32_t *channels,
++                             uint32_t *sample_rate,
++                             audio_in_acoustics_t acoustics,
++                             struct audio_stream_in **stream_in);
++#endif
+     void (*close_input_stream)(struct audio_hw_device *dev,
+                                struct audio_stream_in *stream_in);
+ 
+     /** This method dumps the state of the audio hardware */
+     int (*dump)(const struct audio_hw_device *dev, int fd);
+ 
++#ifndef ICS_AUDIO_BLOB
+     /**
+      * set the audio mute status for all audio activities.  If any value other
+      * than 0 is returned, the software mixer will emulate this capability.
+@@ -666,6 +693,7 @@ struct audio_hw_device {
+      * method may leave it set to NULL.
+      */
+     int (*get_master_mute)(struct audio_hw_device *dev, bool *mute);
++#endif
+ };
+ typedef struct audio_hw_device audio_hw_device_t;
+ 
+diff --git a/modules/audio/audio_hw.c b/modules/audio/audio_hw.c
+index 3051519..9e4019b 100644
+--- a/modules/audio/audio_hw.c
++++ b/modules/audio/audio_hw.c
+@@ -126,11 +126,13 @@ static int out_remove_audio_effect(const struct audio_stream *stream, effect_han
+     return 0;
+ }
+ 
++#ifndef ICS_AUDIO_BLOB
+ static int out_get_next_write_timestamp(const struct audio_stream_out *stream,
+                                         int64_t *timestamp)
+ {
+     return -EINVAL;
+ }
++#endif
+ 
+ /** audio_stream_in implementation **/
+ static uint32_t in_get_sample_rate(const struct audio_stream *stream)
+@@ -244,7 +246,9 @@ static int adev_open_output_stream(struct audio_hw_device *dev,
+     out->stream.set_volume = out_set_volume;
+     out->stream.write = out_write;
+     out->stream.get_render_position = out_get_render_position;
++#ifndef ICS_AUDIO_BLOB
+     out->stream.get_next_write_timestamp = out_get_next_write_timestamp;
++#endif
+ 
+     *stream_out = &out->stream;
+     return 0;
+@@ -287,6 +291,7 @@ static int adev_set_master_volume(struct audio_hw_device *dev, float volume)
+     return -ENOSYS;
+ }
+ 
++#ifndef ICS_AUDIO_BLOB
+ static int adev_get_master_volume(struct audio_hw_device *dev, float *volume)
+ {
+     return -ENOSYS;
+@@ -301,6 +306,7 @@ static int adev_get_master_mute(struct audio_hw_device *dev, bool *muted)
+ {
+     return -ENOSYS;
+ }
++#endif
+ 
+ static int adev_set_mode(struct audio_hw_device *dev, audio_mode_t mode)
+ {
+@@ -400,17 +406,21 @@ static int adev_open(const hw_module_t* module, const char* name,
+     adev->device.init_check = adev_init_check;
+     adev->device.set_voice_volume = adev_set_voice_volume;
+     adev->device.set_master_volume = adev_set_master_volume;
++#ifndef ICS_AUDIO_BLOB
+     adev->device.get_master_volume = adev_get_master_volume;
+     adev->device.set_master_mute = adev_set_master_mute;
+     adev->device.get_master_mute = adev_get_master_mute;
++#endif
+     adev->device.set_mode = adev_set_mode;
+     adev->device.set_mic_mute = adev_set_mic_mute;
+     adev->device.get_mic_mute = adev_get_mic_mute;
+     adev->device.set_parameters = adev_set_parameters;
+     adev->device.get_parameters = adev_get_parameters;
++#ifndef ICS_AUDIO_BLOB
+     adev->device.get_input_buffer_size = adev_get_input_buffer_size;
+     adev->device.open_output_stream = adev_open_output_stream;
+     adev->device.close_output_stream = adev_close_output_stream;
++#endif
+     adev->device.open_input_stream = adev_open_input_stream;
+     adev->device.close_input_stream = adev_close_input_stream;
+     adev->device.dump = adev_dump;
 -- 
-1.8.3.2
+1.9.1
 
