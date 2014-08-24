@@ -1,9 +1,9 @@
-LOCAL_PATH := device/lge/p990
-TARGET_SPECIFIC_HEADER_PATH := device/lge/p990/include
+LOCAL_PATH := device/lge/p990/
+TARGET_SPECIFIC_HEADER_PATH := $(LOCAL_PATH)include
 TARGET_OVERLAY_ALWAYS_DETERMINES_FORMAT := true
-#TARGET_RELEASETOOL_OTA_FROM_TARGET_SCRIPT := device/lge/p990/releasetools/p990-newbl_ota_from_target_files
+TARGET_RELEASETOOL_OTA_FROM_TARGET_SCRIPT := $(LOCAL_PATH)releasetools/p990-newbl_ota_from_target_files
+BOARD_HARDWARE_CLASS := $(LOCAL_PATH)cmhw/
 
-USE_SET_METADATA := false
 
 # CPU
 TARGET_ARCH := arm
@@ -23,6 +23,9 @@ ARCH_ARM_HAVE_TLS_REGISTER := true
 ARCH_ARM_HIGH_OPTIMIZATION := true
 ARCH_ARM_USE_NON_NEON_MEMCPY := true
 TARGET_BOOTLOADER_BOARD_NAME := p990
+TARGET_ARCH_LOWMEM := true
+TARGET_RUNNING_WITHOUT_SYNC_FRAMEWORK := true
+NEED_WORKAROUND_CORTEX_A9_745320 := true
 
 # filesystem
 TARGET_USERIMAGES_SPARSE_EXT_DISABLED := true
@@ -40,20 +43,20 @@ BOARD_HAS_NO_MISC_PARTITION := true
 BOARD_KERNEL_CMDLINE := 
 BOARD_KERNEL_BASE := 0x10000000
 BOARD_PAGE_SIZE := 0x00000800
-#TARGET_KERNEL_SOURCE := kernel/lge/star
-#TARGET_KERNEL_CONFIG := cyanogenmod_p990_defconfig
+#TARGET_KERNEL_SOURCE := kernel/lge/p990
+#TARGET_KERNEL_CONFIG := kowalski_defconfig
+HAVE_SELINUX := false
 
 # prebuilt kernel
-TARGET_PREBUILT_KERNEL := device/lge/p990/kernel/zImage
+TARGET_PREBUILT_KERNEL := $(LOCAL_PATH)kernel/zImage
 
 # wifi
-BOARD_WPA_SUPPLICANT_DRIVER := NL80211
 WPA_SUPPLICANT_VERSION      := VER_0_8_X
+BOARD_WPA_SUPPLICANT_DRIVER := NL80211
 BOARD_WPA_SUPPLICANT_PRIVATE_LIB := lib_driver_cmd_bcmdhd
 BOARD_HOSTAPD_DRIVER        := NL80211
 BOARD_HOSTAPD_PRIVATE_LIB   := lib_driver_cmd_bcmdhd
 BOARD_WLAN_DEVICE           := bcmdhd
-#WIFI_DRIVER_MODULE_PATH     := "/system/lib/modules/bcm4329.ko"
 WIFI_DRIVER_FW_PATH_PARAM   := "/sys/module/bcmdhd/parameters/firmware_path"
 WIFI_DRIVER_FW_PATH_STA     := "/vendor/firmware/fw_bcmdhd.bin"
 WIFI_DRIVER_FW_PATH_AP      := "/vendor/firmware/fw_bcmdhd_apsta.bin"
@@ -61,9 +64,9 @@ WIFI_DRIVER_FW_PATH_AP      := "/vendor/firmware/fw_bcmdhd_apsta.bin"
 # bluetooth
 BOARD_HAVE_BLUETOOTH := true
 BOARD_HAVE_BLUETOOTH_BCM := true
-BOARD_BLUEDROID_VENDOR_CONF := device/lge/p990/config/bluetooth/vnd_star.txt
-BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/lge/p990/config/bluetooth
-BOARD_BLUETOOTH_LIBBT_VNDCFG := device/lge/p990/config/bluetooth/bt_vendor.conf
+BOARD_BLUEDROID_VENDOR_CONF := $(LOCAL_PATH)config/bluetooth/vnd_star.txt
+BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := $(LOCAL_PATH)config/bluetooth
+BOARD_BLUETOOTH_LIBBT_VNDCFG := $(LOCAL_PATH)config/bluetooth/bt_vendor.conf
 TARGET_NEEDS_BLUETOOTH_INIT_DELAY := true
 
 # audio
@@ -72,7 +75,8 @@ TARGET_DONT_SET_AUDIO_AAC_FORMAT := true
 BOARD_HAVE_PRE_KITKAT_AUDIO_BLOB := true
 
 # camera
-COMMON_GLOBAL_CFLAGS += -DICS_CAMERA_BLOB
+COMMON_GLOBAL_CFLAGS += -DICS_CAMERA_BLOB -DNEEDS_VECTORIMPL_SYMBOLS
+USE_DEVICE_SPECIFIC_CAMERA := true
 
 COMMON_GLOBAL_CFLAGS += -DNEEDS_VECTORIMPL_SYMBOLS
 
@@ -80,9 +84,10 @@ COMMON_GLOBAL_CFLAGS += -DNEEDS_VECTORIMPL_SYMBOLS
 BOARD_USE_SKIA_LCDTEXT := true
 USE_OPENGL_RENDERER := true
 BOARD_NO_ALLOW_DEQUEUE_CURRENT_BUFFER := true
+BOARD_USE_MHEAP_SCREENSHOT := true
 
 # egl
-BOARD_EGL_CFG := device/lge/p990/egl.cfg
+BOARD_EGL_CFG := $(LOCAL_PATH)egl.cfg
 BOARD_EGL_NEEDS_FNW := true
 BOARD_USE_MHEAP_SCREENSHOT := true
 BOARD_EGL_WORKAROUND_BUG_10194508 := true
@@ -98,26 +103,27 @@ NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
 TARGET_OTA_ASSERT_DEVICE := p990
 
 # ril
-BOARD_RIL_CLASS := ../../../device/lge/p990/ril/
+BOARD_RIL_CLASS := ../../../$(LOCAL_PATH)ril/
 BOARD_MOBILEDATA_INTERFACE_NAME := "vsnet0"
 
 # recovery
 TARGET_USE_CUSTOM_LUN_FILE_PATH := "/sys/devices/platform/fsl-tegra-udc/gadget/lun%d/file"
 TARGET_RECOVERY_PRE_COMMAND := "/system/bin/setup-recovery"
 BOARD_HAS_NO_SELECT_BUTTON := true
-TARGET_RECOVERY_FSTAB := device/lge/p990/fstab.star
+TARGET_RECOVERY_FSTAB := $(LOCAL_PATH)ramdisk/fstab.star
 RECOVERY_FSTAB_VERSION := 2
+
+# Since some recoveries don't support the "set_metadata" command, try not use them
+USE_SET_METADATA := false
+SKIP_SET_METADATA := true
 
 # sensors
 BOARD_SYSFS_LIGHT_SENSOR := "/sys/class/backlight/aat2870-backlight/brightness_mode"
+#BOARD_HAS_VIBRATOR_IMPLEMENTATION := $(LOCAL_PATH)vibrator.c
 BOARD_HAS_VIBRATOR_IMPLEMENTATION := ../../device/lge/p990/vibrator.c
 
-# var
-TARGET_ARCH_LOWMEM := true
-HAVE_SELINUX := false
-
 # TWRP
-TARGET_RECOVERY_INITRC := device/lge/p990/init.recovery.rc
+TARGET_RECOVERY_INITRC := $(LOCAL_PATH)ramdisk/init.recovery.rc
 TW_BRIGHTNESS_PATH := /sys/class/backlight/aat2870-backlight/brightness
 DEVICE_RESOLUTION := 480x800
 TW_INTERNAL_STORAGE_PATH := "/sdcard"
@@ -125,17 +131,12 @@ TW_INTERNAL_STORAGE_MOUNT_POINT := "sdcard"
 TW_EXTERNAL_STORAGE_PATH := "/external_sd"
 TW_EXTERNAL_STORAGE_MOUNT_POINT := "external_sd"
 
-# Avoid the generation of ldrcc instructions
-NEED_WORKAROUND_CORTEX_A9_745320 := true
+# Various
+TARGET_USE_PIPE := true
+TARGET_USE_OS := true
 
-BOARD_HARDWARE_CLASS := device/lge/p990/cmhw/
-
+# testing
 BOARD_MALLOC_ALIGNMENT := 16
-TARGET_EXTRA_CFLAGS := $(call cc-option,-mtune=cortex-a9) $(call cc-option,-mcpu=cortex-a9)
-
-#define to use all of the Linaro Cortex-A9 optimized string funcs,
-#instead of subset known to work on all machines
-USE_ALL_OPTIMIZED_STRING_FUNCS := true
 
 # Skip droiddoc build to save build time
 BOARD_SKIP_ANDROID_DOC_BUILD := true

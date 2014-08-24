@@ -12,10 +12,22 @@ on init
     export EXTERNAL_STORAGE /storage/sdcard0
     export SECONDARY_STORAGE /storage/sdcard1
 
+    mkdir /storage 0775 system system
+    mkdir /storage/sdcard0 0775 system system
+    mkdir /storage/sdcard1 0775 system system
+
+    mkdir /mnt 0775 root system
+    mkdir /mnt/media_rw/ 0775 media_rw media_rw
+    mkdir /mnt/media_rw/sdcard0 0700 media_rw media_rw
+    mkdir /mnt/media_rw/sdcard1 0700 media_rw media_rw
+
     # Support legacy paths
     symlink /storage/sdcard0 /sdcard
     symlink /storage/sdcard0 /mnt/sdcard
     symlink /storage/sdcard0 /storage/sdcard
+    symlink /storage/sdcard1 /extSdCard
+    symlink /storage/sdcard1 /mnt/extSdCard
+    symlink /storage/sdcard1 /external_sd
 
 # Backward compatibility
     symlink /system/bin /bin
@@ -46,8 +58,10 @@ on post-fs
     mkdir /data/misc/wifi/sockets 0770 wifi wifi
     setprop wifi.supplicant_scan_interval 180
     setprop wifi.interface wlan0
+    chown wifi wifi /data/misc/wifi/wpa_supplicant.conf
 # DHCP
-    mkdir /data/misc/dhcp 0777 system system
+    mkdir /data/misc/dhcp 0770 dhcp dhcp
+    chown dhcp dhcp /data/misc/dhcp
 # 20100716 mingi.sung@lge.com <make wifi directory> [END]
 
     ## ANDY_PORTING LGDRM [lg-drm@lge.com 100401]
@@ -162,6 +176,15 @@ on boot
     chown system system /sys/module/cpu_tegra/parameters/cpu_user_cap
     chmod 0664 /sys/module/cpu_tegra/parameters/cpu_user_cap
 
+# Ensure default cpu caps
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 216000
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1000000
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
+    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq 216000
+    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq 1000000
+    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor interactive
+    write /sys/module/cpu_tegra/parameters/cpu_user_cap 1000000
+
 # Power management settings
     write /sys/devices/system/cpu/cpufreq/interactive/boost_factor 2
     write /sys/devices/system/cpu/cpufreq/interactive/input_boost 1
@@ -272,10 +295,10 @@ service vsnet2_down /system/bin/init.vsnet-down 2
    disabled
    oneshot
 
-service fuse_sdcard0 /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/sdcard0 /storage/sdcard0
+service fuse_sdcard0 /system/bin/sdcard -u 1023 -g 1023 /mnt/media_rw/sdcard0 /storage/sdcard0
     class late_start
     disabled
 
-service fuse_sdcard1 /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/sdcard1 /storage/sdcard1
+service fuse_sdcard1 /system/bin/sdcard -u 1023 -g 1023 /mnt/media_rw/sdcard1 /storage/sdcard1
     class late_start
     disabled
